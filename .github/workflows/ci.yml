@@ -15,7 +15,7 @@ jobs:
     name: fmt, clippy, test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Grant cargo access to satoraHQ/swap
         # SDK_GIT_TOKEN: fine-grained PAT with read access to satoraHQ/swap.
