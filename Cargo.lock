@@ -4847,7 +4847,7 @@ dependencies = [
 [[package]]
 name = "satora-rust-sdk"
 version = "0.0.1"
-source = "git+https://github.com/satoraHQ/swap?rev=2653a5650ab574cc545a2d8d1dd6249ec9444a42#2653a5650ab574cc545a2d8d1dd6249ec9444a42"
+source = "git+https://github.com/satoraHQ/swap?rev=8b739ddb7b44584d6b73f1af88987260665bf33a#8b739ddb7b44584d6b73f1af88987260665bf33a"
 dependencies = [
  "alloy",
  "alloy-dyn-abi",

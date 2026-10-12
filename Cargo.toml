@@ -14,7 +14,7 @@ path = "src/main.rs"
 # Satora Rust SDK. The crate is `satora-rust-sdk`; its library name is `lendaswap_sdk`.
 # Pinned to satoraHQ/swap#1228 (paymaster + fee fixes) until it lands on main;
 # .github/workflows/update-sdk.yml then moves the pin to main automatically.
-lendaswap-sdk = { package = "satora-rust-sdk", git = "https://github.com/satoraHQ/swap", rev = "2653a5650ab574cc545a2d8d1dd6249ec9444a42", features = ["gasless"] }
+lendaswap-sdk = { package = "satora-rust-sdk", git = "https://github.com/satoraHQ/swap", rev = "8b739ddb7b44584d6b73f1af88987260665bf33a", features = ["gasless"] }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive", "env"] }
