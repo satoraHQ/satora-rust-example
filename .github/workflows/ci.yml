@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  # Let cargo use the git CLI so the token below applies to the private SDK repo.
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+
+jobs:
+  check:
+    name: fmt, clippy, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Grant cargo access to satoraHQ/swap
+        # SDK_GIT_TOKEN: fine-grained PAT with read access to satoraHQ/swap.
+        run: |
+          git config --global url."https://x-access-token:${SDK_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+        env:
+          SDK_GIT_TOKEN: ${{ secrets.SDK_GIT_TOKEN }}
+
+      - name: Install Rust 1.94
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.94.0"
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --locked
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Smoke test
+        run: ./target/release/satora-ln2base --help

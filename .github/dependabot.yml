@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # The SDK is a git pin and is bumped by .github/workflows/update-sdk.yml.
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      crates:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
