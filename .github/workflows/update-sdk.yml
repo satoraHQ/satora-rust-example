@@ -1,0 +1,62 @@
+name: Update Satora SDK
+
+# Bumps the `satora-rust-sdk` git pin in Cargo.toml to the tip of
+# satoraHQ/swap main and opens a PR. Dependabot does not follow
+# git-pinned Cargo dependencies, so this does it instead.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Grant cargo access to satoraHQ/swap
+        run: |
+          git config --global url."https://x-access-token:${SDK_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+        env:
+          SDK_GIT_TOKEN: ${{ secrets.SDK_GIT_TOKEN }}
+
+      - name: Install Rust 1.94
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.94.0"
+
+      - name: Resolve latest main of satoraHQ/swap
+        id: upstream
+        run: |
+          sha=$(git ls-remote https://github.com/satoraHQ/swap refs/heads/main | cut -f1)
+          current=$(grep -oE 'rev = "[0-9a-f]+"' Cargo.toml | head -1 | grep -oE '[0-9a-f]{7,}')
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "short=${sha:0:12}" >> "$GITHUB_OUTPUT"
+          echo "changed=$([ "$sha" != "$current" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Bump pin and refresh Cargo.lock
+        if: steps.upstream.outputs.changed == 'true'
+        run: |
+          sed -i -E "s|(git = \"https://github.com/satoraHQ/swap\", rev = \")[0-9a-f]+|\1${{ steps.upstream.outputs.sha }}|" Cargo.toml
+          cargo update -p satora-rust-sdk
+          cargo check --locked
+
+      - name: Open pull request
+        if: steps.upstream.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/update-sdk
+          title: "chore: bump satora-rust-sdk to ${{ steps.upstream.outputs.short }}"
+          commit-message: "chore: bump satora-rust-sdk to ${{ steps.upstream.outputs.sha }}"
+          body: |
+            Bumps `satora-rust-sdk` to satoraHQ/swap@${{ steps.upstream.outputs.sha }}.
+            Opened by the `update-sdk` workflow.
+          delete-branch: true

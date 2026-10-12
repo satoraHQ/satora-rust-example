@@ -1,0 +1,28 @@
+[package]
+name = "satora-ln2base"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+description = "Satora example CLI: swap Lightning sats to USDC on Base and auto-claim"
+license = "MIT"
+
+[[bin]]
+name = "satora-ln2base"
+path = "src/main.rs"
+
+[dependencies]
+# Satora Rust SDK. The crate is `satora-rust-sdk`; its library name is `lendaswap_sdk`.
+# Pinned to satoraHQ/swap#1228 (paymaster + fee fixes) until it lands on main;
+# .github/workflows/update-sdk.yml then moves the pin to main automatically.
+lendaswap-sdk = { package = "satora-rust-sdk", git = "https://github.com/satoraHQ/swap", rev = "2653a5650ab574cc545a2d8d1dd6249ec9444a42", features = ["gasless"] }
+
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+# Same major as the SDK; only the `Method` type is used, for the `Endpoint` trait.
+reqwest = { version = "0.13", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2"
+
