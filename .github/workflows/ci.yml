@@ -22,8 +22,9 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.SDK_DEPLOY_KEY }}
-      - name: Fetch GitHub over SSH
-        run: git config --global url."git@github.com:".insteadOf "https://github.com/"
+      - name: Fetch satoraHQ/swap over SSH
+        # Scoped to the SDK repo so pushes to this repo keep using GITHUB_TOKEN over HTTPS.
+        run: git config --global url."git@github.com:satoraHQ/swap".insteadOf "https://github.com/satoraHQ/swap"
 
       - name: Install Rust 1.94
         uses: dtolnay/rust-toolchain@master
