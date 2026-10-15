@@ -39,9 +39,8 @@ claimed with it, and swap records live in `swaps.sqlite` next to it.
 
 ## Build
 
-Requires Rust 1.94. The SDK is pulled from the private `satoraHQ/swap` repo
-over HTTPS, so `git` must be able to authenticate (for example through
-`gh auth setup-git`).
+Requires Rust 1.94. The SDK is pulled from the public
+[`satoraHQ/satora-sdk`](https://github.com/satoraHQ/satora-sdk) repository.
 
 ```
 cargo build --release

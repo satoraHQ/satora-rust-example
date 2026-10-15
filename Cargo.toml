@@ -12,9 +12,10 @@ path = "src/main.rs"
 
 [dependencies]
 # Satora Rust SDK. The crate is `satora-rust-sdk`; its library name is `lendaswap_sdk`.
-# Pinned to a commit on satoraHQ/swap main; .github/workflows/update-sdk.yml
-# moves the pin forward and opens a PR.
-lendaswap-sdk = { package = "satora-rust-sdk", git = "https://github.com/satoraHQ/swap", rev = "8da200ec2c464f3fe1b360f003e2deb4847235f0", features = ["gasless"] }
+# satoraHQ/satora-sdk is the public mirror of the SDKs in satoraHQ/swap.
+# Pinned to a commit on its main; .github/workflows/update-sdk.yml moves the
+# pin forward and opens a PR.
+lendaswap-sdk = { package = "satora-rust-sdk", git = "https://github.com/satoraHQ/satora-sdk", rev = "0b604470", features = ["gasless"] }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive", "env"] }

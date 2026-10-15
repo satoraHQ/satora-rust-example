@@ -1,8 +1,8 @@
 name: Update Satora SDK
 
 # Bumps the `satora-rust-sdk` git pin in Cargo.toml to the tip of
-# satoraHQ/swap main and opens a PR. Dependabot does not follow
-# git-pinned Cargo dependencies, so this does it instead.
+# satoraHQ/satora-sdk main (the public mirror of the SDKs) and opens a PR.
+# Dependabot does not follow git-pinned Cargo dependencies, so this does it.
 
 on:
   schedule:
@@ -13,33 +13,21 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
-
 jobs:
   bump:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Grant cargo access to satoraHQ/swap
-        # SDK_DEPLOY_KEY: private half of a read-only deploy key on satoraHQ/swap.
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.SDK_DEPLOY_KEY }}
-      - name: Fetch satoraHQ/swap over SSH
-        # Scoped to the SDK repo so pushes to this repo keep using GITHUB_TOKEN over HTTPS.
-        run: git config --global url."git@github.com:satoraHQ/swap".insteadOf "https://github.com/satoraHQ/swap"
-
       - name: Install Rust 1.94
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: "1.94.0"
 
-      - name: Resolve latest main of satoraHQ/swap
+      - name: Resolve latest main of satoraHQ/satora-sdk
         id: upstream
         run: |
-          sha=$(git ls-remote https://github.com/satoraHQ/swap refs/heads/main | cut -f1)
+          sha=$(git ls-remote https://github.com/satoraHQ/satora-sdk refs/heads/main | cut -f1)
           current=$(grep -oE 'rev = "[0-9a-f]+"' Cargo.toml | head -1 | grep -oE '[0-9a-f]{7,}')
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "short=${sha:0:12}" >> "$GITHUB_OUTPUT"
@@ -48,7 +36,7 @@ jobs:
       - name: Bump pin and refresh Cargo.lock
         if: steps.upstream.outputs.changed == 'true'
         run: |
-          sed -i -E "s|(git = \"https://github.com/satoraHQ/swap\", rev = \")[0-9a-f]+|\1${{ steps.upstream.outputs.sha }}|" Cargo.toml
+          sed -i -E "s|(git = \"https://github.com/satoraHQ/satora-sdk\", rev = \")[0-9a-f]+|\1${{ steps.upstream.outputs.sha }}|" Cargo.toml
           cargo update -p satora-rust-sdk
           cargo check --locked
 
@@ -60,6 +48,6 @@ jobs:
           title: "chore: bump satora-rust-sdk to ${{ steps.upstream.outputs.short }}"
           commit-message: "chore: bump satora-rust-sdk to ${{ steps.upstream.outputs.sha }}"
           body: |
-            Bumps `satora-rust-sdk` to satoraHQ/swap@${{ steps.upstream.outputs.sha }}.
+            Bumps `satora-rust-sdk` to satoraHQ/satora-sdk@${{ steps.upstream.outputs.sha }}.
             Opened by the `update-sdk` workflow.
           delete-branch: true

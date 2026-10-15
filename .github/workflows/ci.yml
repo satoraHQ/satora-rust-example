@@ -7,8 +7,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  # Let cargo use the git CLI so the token below applies to the private SDK repo.
-  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
 
 jobs:
   check:
@@ -16,15 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Grant cargo access to satoraHQ/swap
-        # SDK_DEPLOY_KEY: private half of a read-only deploy key on satoraHQ/swap.
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.SDK_DEPLOY_KEY }}
-      - name: Fetch satoraHQ/swap over SSH
-        # Scoped to the SDK repo so pushes to this repo keep using GITHUB_TOKEN over HTTPS.
-        run: git config --global url."git@github.com:satoraHQ/swap".insteadOf "https://github.com/satoraHQ/swap"
 
       - name: Install Rust 1.94
         uses: dtolnay/rust-toolchain@master
