@@ -55,18 +55,6 @@ release build on every push and PR. `.github/workflows/update-sdk.yml` runs
 on weekdays, bumps the SDK pin to the tip of `satoraHQ/swap` main and opens a
 PR; Dependabot covers GitHub Actions and crates.io dependencies.
 
-Both workflows need one repository secret, `SDK_DEPLOY_KEY`: the private
-half of a read-only deploy key registered on `satoraHQ/swap`, because the
-SDK is a git dependency on a private repository. To rotate it:
-
-```
-ssh-keygen -t ed25519 -N "" -C "satora-rust-example ci" -f sdk_deploy_key
-gh api -X POST repos/satoraHQ/swap/keys -f title="satora-rust-example CI (read-only)" \
-  -f key="$(cat sdk_deploy_key.pub)" -F read_only=true
-gh secret set SDK_DEPLOY_KEY --repo satoraHQ/satora-rust-example < sdk_deploy_key
-rm sdk_deploy_key sdk_deploy_key.pub
-```
-
 ## How the claim works
 
 1. `GET /aa/config?chain=42161` supplies the EntryPoint, Kernel delegation
