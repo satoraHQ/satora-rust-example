@@ -4,6 +4,7 @@ Example CLI built on the [Satora Rust SDK](https://github.com/satoraHQ/swap/tree
 pay a Lightning invoice, receive USDC on Base.
 
 ```
+satora-ln2base quote --sats 50000
 satora-ln2base swap --to 0xYourBaseAddress --sats 50000
 ```
 
@@ -17,6 +18,7 @@ Circle's CCTP adapter, which mints the USDC on Base. No ETH is needed.
 
 | Command | What it does |
 | --- | --- |
+| `quote (--sats N \| --usdc X)` | Server quote for the trade, no wallet needed |
 | `swap --to <addr> (--sats N \| --usdc X) [--memo ..] [--no-claim]` | Create, print invoice, wait, claim |
 | `claim <swap-id>` | Resume a stored swap (wait + claim), e.g. after Ctrl‑C |
 | `status <swap-id>` | Dump the server's view of a swap |
@@ -32,7 +34,7 @@ Global options (also environment variables):
 | `--mnemonic` | `SATORA_MNEMONIC` | generated into `--data-dir` on first run |
 | `--data-dir` | `SATORA_DATA_DIR` | `~/.satora-ln2base` |
 | `--rpc` | `ARBITRUM_RPC` | the bundler endpoint Satora serves |
-| `--referral` | `SATORA_REFERRAL` | none |
+| `--referral` | `SATORA_REFERRAL` | none; a partner key's referral id applies its negotiated rate to quotes and swaps |
 
 The mnemonic owns the per‑swap claim keys. Back it up: a swap can only be
 claimed with it, and swap records live in `swaps.sqlite` next to it.

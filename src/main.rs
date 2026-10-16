@@ -18,8 +18,8 @@ use lendaswap_sdk::aa::{AaConfig, PaymasterConfig, UserOpConfig};
 use lendaswap_sdk::evm::{Address, EvmClaimOptions, EvmWallet, RpcWallet, U256};
 use lendaswap_sdk::types::{
     BridgeRecipient, BridgeRoute, Chain, DexAmount, DexCalldataRequest, DexCallsPayload, DexToken,
-    EvmAsset, GetSwapResponse, KnownChain, LightningToEvmSwapResponse, QuoteAmount, SwapCreation,
-    SwapOptions, SwapStatus, TokenId,
+    EvmAsset, GetSwapResponse, KnownChain, LightningToEvmSwapResponse, QuoteAmount, QuoteRequest,
+    SwapCreation, SwapOptions, SwapStatus, TokenId,
 };
 use lendaswap_sdk::{Client, Endpoint, PayloadKind, Signer, StoredSwap};
 use serde::{Deserialize, Serialize};
@@ -79,6 +79,8 @@ struct Global {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Quote sats → USDC on Base without creating anything (no wallet needed).
+    Quote(QuoteArgs),
     /// Create the swap, print the invoice, and claim once the server funds.
     Swap(SwapArgs),
     /// Resume/claim an existing swap by ID (e.g. after an interruption).
@@ -111,13 +113,27 @@ struct SwapArgs {
     no_claim: bool,
 }
 
+#[derive(Args)]
+struct QuoteArgs {
+    /// Sats to pay over Lightning.
+    #[arg(long, conflicts_with = "usdc")]
+    sats: Option<u64>,
+    /// Exact USDC to receive on Base, e.g. 25 or 12.50.
+    #[arg(long, conflicts_with = "sats")]
+    usdc: Option<String>,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
     init_logging(cli.global.verbose);
+    if let Command::Quote(args) = &cli.command {
+        return quote(&cli.global, args).await;
+    }
     let client = build_client(&cli.global)?;
 
     match cli.command {
+        Command::Quote(_) => unreachable!("handled above"),
         Command::Swap(args) => run_swap(&client, &cli.global, args).await,
         Command::Claim { swap_id } => {
             let stored = load_swap(&client, &swap_id)?;
@@ -208,6 +224,48 @@ async fn aa_setup(
         bail!("Satora returned no paymaster for Arbitrum; a sponsored claim needs one");
     }
     Ok((aa, config, rpc))
+}
+
+/// A server quote for Lightning → USDC on Base. The SDK quotes a bridge-only
+/// target on the Arbitrum hub and names Base in `bridge_target_chain`, exactly
+/// as `swap` creates it. The referral code (if any) sets the partner rate.
+async fn quote(global: &Global, args: &QuoteArgs) -> Result<()> {
+    let amount = match (args.sats, args.usdc.as_deref()) {
+        (Some(sats), None) => QuoteAmount::Source(u128::from(sats)),
+        (None, Some(usdc)) => QuoteAmount::Target(parse_usdc(usdc)?),
+        _ => bail!("pass exactly one of --sats or --usdc"),
+    };
+    let mut client = Client::new(&global.api)?;
+    client.set_referral_code(global.referral.clone());
+    let q = client
+        .get_server_quote(QuoteRequest::new(
+            Chain::lightning(),
+            TokenId::Btc,
+            Chain::from_wire_str(&BASE.to_string()),
+            TokenId::Other(USDC_BASE.to_string()),
+            amount,
+        ))
+        .await?;
+    println!("you pay:        {} sats over Lightning", q.source_amount);
+    println!(
+        "you receive:    {} USDC on Base",
+        format_usdc(&q.net_target_amount)
+    );
+    println!("rate:           {} USD/BTC", q.exchange_rate);
+    println!(
+        "fees:           protocol {} sats ({:.2}%), network {} sats{}",
+        q.protocol_fee,
+        q.protocol_fee_rate * 100.0,
+        q.network_fee + q.gasless_network_fee,
+        q.bridge_fee
+            .map(|f| format!(", CCTP bridge {} USDC", format_usdc(&f.to_string())))
+            .unwrap_or_default()
+    );
+    println!("limits:         {}..{} sats", q.min_amount, q.max_amount);
+    if let Some(code) = &global.referral {
+        println!("referral:       {code}");
+    }
+    Ok(())
 }
 
 fn init_logging(verbose: bool) {
