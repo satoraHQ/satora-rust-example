@@ -4847,17 +4847,19 @@ dependencies = [
 [[package]]
 name = "satora-rust-sdk"
 version = "0.0.1"
-source = "git+https://github.com/satoraHQ/satora-sdk?rev=9b26f5f4234dd5e699f5874cf8f3510e0bcedab5#9b26f5f4234dd5e699f5874cf8f3510e0bcedab5"
+source = "git+https://github.com/satoraHQ/satora-sdk?rev=40ee3e23f343a40206fcd4d1a978725a66243391#40ee3e23f343a40206fcd4d1a978725a66243391"
 dependencies = [
  "alloy",
  "alloy-dyn-abi",
  "alloy-provider",
  "ark-bdk-wallet",
+ "ark-fees",
  "ark-rs",
  "bip39",
  "bitcoin",
  "esplora-client",
  "hex",
+ "lightning-invoice",
  "num-bigint",
  "num-traits",
  "rand 0.8.8",
