@@ -524,6 +524,9 @@ async fn claim(client: &Client, global: &Global, swap_id: &str) -> Result<()> {
             bridge_recipient: Some(BridgeRecipient::Evm {
                 address: destination.to_string(),
             }),
+            // Lets the server deliver the bridged payout itself, without
+            // Circle's forwarding fee.
+            swap_id: Some(swap_id.to_string()),
         })
         .await
         .context("fetch DEX + CCTP claim calls")?;
