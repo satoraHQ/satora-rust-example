@@ -15,7 +15,7 @@ path = "src/main.rs"
 # satoraHQ/satora-sdk is the public mirror of the SDKs in satoraHQ/swap.
 # Pinned to a commit on its main; .github/workflows/update-sdk.yml moves the
 # pin forward and opens a PR.
-lendaswap-sdk = { package = "satora-rust-sdk", git = "https://github.com/satoraHQ/satora-sdk", rev = "64a937adc1a64ae9ac2828cdbebf26a07d29bd30", features = ["gasless"] }
+lendaswap-sdk = { package = "satora-rust-sdk", git = "https://github.com/satoraHQ/satora-sdk", rev = "b9ed438126d8ec9c70986493429e242abda6fb49", features = ["gasless"] }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive", "env"] }
